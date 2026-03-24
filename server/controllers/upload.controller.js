@@ -5,6 +5,7 @@ const { uploadBuffer } = require('../services/cloudinary.service');
 const uploadView       = require('../views/upload.view');
 const exifr            = require('exifr');
 const UploadedPictureModel = require('../models/uploadedPicture.model');
+const TripModel = require('../models/trip.model');
 
 async function uploadImages(req, res, next) {
   try {
@@ -21,6 +22,9 @@ async function uploadImages(req, res, next) {
 async function uploadWithExif(req, res, next) {
   try {
     if (!req.files?.length) return uploadView.noFiles(res);
+
+    const tripSlug = `trip1-${Date.now()}`;
+    const newTrip = await TripModel.create({ title: 'trip1', slug: tripSlug });
 
     const results = await Promise.all(
       req.files.map(async (f) => {
@@ -48,14 +52,15 @@ async function uploadWithExif(req, res, next) {
           url,
           dateTaken,
           latitude,
-          longitude
+          longitude,
+          tripId: newTrip.id
         });
 
         return savedPic;
       })
     );
 
-    res.status(200).json({ success: true, pictures: results });
+    res.status(200).json({ success: true, trip: newTrip, pictures: results });
   } catch (err) { next(err); }
 }
 
