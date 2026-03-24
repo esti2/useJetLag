@@ -1,0 +1,98 @@
+.how-container {
+  padding: 80px 20px;
+  text-align: center;
+  background: #f9fafb;
+}
+
+.how-container h2 {
+  font-size: 40px;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 18px;
+  margin-bottom: 50px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+/* Card Base */
+.card {
+  padding: 40px 25px;
+  border-radius: 20px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* ICON */
+.icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* TEXT */
+.card h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.card p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* COLORS (من كودك 🔥) */
+
+.blue {
+  background: #e6f0f5;
+  border: 1px solid #bcd6e4;
+}
+
+.blue .icon {
+  background: #4da8da;
+}
+
+.orange {
+  background: #ffece6;
+  border: 1px solid #ffbfae;
+}
+
+.orange .icon {
+  background: #ff7a59;
+}
+
+.beige {
+  background: #f3eee9;
+  border: 1px solid #e2d6c9;
+}
+
+.beige .icon {
+  background: #4da8da;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

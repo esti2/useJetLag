@@ -10,7 +10,9 @@ export default function FolderDropZone({ onFiles }) {
     const files = [];
     items.forEach((item) => {
       const f = item.getAsFile();
-      if (f?.type.startsWith('image/')) files.push(f);
+      if (f && (f.type.startsWith('image/') || f.name.toLowerCase().endsWith('.heic'))) {
+        files.push(f);
+      }
     });
     if (files.length) onFiles(files);
   }
@@ -34,9 +36,12 @@ export default function FolderDropZone({ onFiles }) {
         </Button>
       </Stack>
       <input
-        ref={inputRef} type="file" accept="image/*" multiple
+        ref={inputRef} type="file" accept="image/*,.heic" multiple
         style={{ display: 'none' }}
-        onChange={(e) => onFiles(Array.from(e.target.files))}
+        onChange={(e) => {
+          const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().endsWith('.heic'));
+          if (files.length) onFiles(files);
+        }}
       />
     </Box>
   );
