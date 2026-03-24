@@ -9,9 +9,23 @@ export default function PictureItem({ picture }) {
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       {/* Header section with Date and Weather */}
-      <Group justify="space-between" mb="xs">
+      <Group justify="space-between" mb="xs" align="flex-start">
         <Text fw={500} size="sm">{formattedDate}</Text>
-        <Badge color="blue" variant="light">Weather placeholder</Badge>
+        {picture.weather_temp !== null && picture.weather_temp !== undefined ? (
+          <Group gap="xs" align="center">
+            <Text fw={500} size="sm">{Math.round(picture.weather_temp)}°C</Text>
+            {picture.weather_icon && (
+              <Image 
+                src={`https://openweathermap.org/img/wn/${picture.weather_icon}.png`} 
+                alt="Weather" 
+                w={30} 
+                h={30} 
+              />
+            )}
+          </Group>
+        ) : (
+          <Badge color="blue" variant="light">No weather data</Badge>
+        )}
       </Group>
 
       {/* Center Image */}

@@ -1,12 +1,12 @@
 const pool = require('../db/pool');
 
 const UploadedPictureModel = {
-  async create({ url, dateTaken, latitude, longitude, tripId }) {
+  async create({ url, dateTaken, latitude, longitude, tripId, weatherTemp, weatherIcon }) {
     const { rows } = await pool.query(
-      `INSERT INTO uploaded_pictures (url, date_taken, latitude, longitude, trip_id)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO uploaded_pictures (url, date_taken, latitude, longitude, trip_id, weather_temp, weather_icon)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [url, dateTaken, latitude, longitude, tripId]
+      [url, dateTaken, latitude, longitude, tripId, weatherTemp, weatherIcon]
     );
     return rows[0];
   },

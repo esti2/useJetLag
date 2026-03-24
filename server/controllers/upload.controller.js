@@ -47,13 +47,26 @@ async function uploadWithExif(req, res, next) {
           console.error("Exif extraction failed for file", f.originalname, exifErr);
         }
 
+        let weatherTemp = null;
+        let weatherIcon = null;
+
+        if (latitude && longitude) {
+          const weather = await require('../services/weather.service').getWeather(latitude, longitude, dateTaken);
+          if (weather) {
+            weatherTemp = weather.temperature;
+            weatherIcon = weather.icon;
+          }
+        }
+
         // 3. Save to uploaded_pictures DB table
         const savedPic = await UploadedPictureModel.create({
           url,
           dateTaken,
           latitude,
           longitude,
-          tripId: newTrip.id
+          tripId: newTrip.id,
+          weatherTemp,
+          weatherIcon
         });
 
         return savedPic;
