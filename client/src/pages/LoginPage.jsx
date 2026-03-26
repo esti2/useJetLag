@@ -10,7 +10,7 @@ import {
   Stack,
   Anchor
 } from "@mantine/core";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 export default function LoginPage() {
@@ -23,13 +23,16 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoginError, setIsLoginError] = useState(false);
 
+  const location = useLocation();
+  const from = location.state?.from || '/my-feed';
+
   async function handleLogin() {
     setIsLoginError(false);
     setIsLoggingIn(true);
     try {
       // כאן משתמשים בפונקציה מה-Hook
       await loginUser(email, password);
-      navigate('/my-feed');
+      navigate(from);
     } catch (err) {
       console.error(err);
       setIsLoginError(true);

@@ -5,11 +5,13 @@ import { Sparkles, MapPin, X, Check } from 'lucide-react';
 import { getTripBySlug, generateTripStory, publishTripStory } from '../api/trips.api';
 import { deletePicture } from '../api/upload.api';
 import PictureItem from '../components/upload/PictureItem';
+import useAuth from '../hooks/useAuth';
 
 export default function TripPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-
+  const { isLoggedIn } = useAuth();
+  
   const [trip, setTrip] = useState({});
   const [pictures, setPictures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,13 +24,12 @@ export default function TripPage() {
       try {
         setLoading(true);
         const { data } = await getTripBySlug(slug);
-
+        
         let loadedTrip = data.trip || {};
-        // Ensure POIs are always parsed
         if (typeof loadedTrip.points_of_interest === 'string') {
           loadedTrip.points_of_interest = JSON.parse(loadedTrip.points_of_interest);
         }
-
+        
         setTrip(loadedTrip);
         setPictures(data.pictures || []);
         if (loadedTrip.story_summary) setIsDraft(true);
@@ -45,6 +46,7 @@ export default function TripPage() {
   }, [slug]);
 
   async function handleDeletePicture(id) {
+    if (trip.is_published) return;
     try {
       await deletePicture(id);
       setPictures(prev => prev.filter(p => p.id !== id));
@@ -59,7 +61,7 @@ export default function TripPage() {
     try {
       const { data } = await generateTripStory(slug);
       const geminiJSON = data.geminiJSON;
-
+      
       setTrip(prev => ({
         ...prev,
         title: geminiJSON.catchy_title,
@@ -85,6 +87,10 @@ export default function TripPage() {
   }
 
   async function handlePublish() {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { from: `/trip/${slug}` } });
+      return;
+    }
     setPublishing(true);
     try {
       const payload = {
@@ -109,7 +115,6 @@ export default function TripPage() {
 
   const pois = trip.points_of_interest || [];
 
-  // Group pictures into chunks of 1 or 2 for a dynamic magazine layout
   const groupedPictures = [];
   let idx = 0;
   while (idx < pictures.length) {
@@ -118,20 +123,26 @@ export default function TripPage() {
     idx += size;
   }
 
+  const isPub = trip.is_published;
+
   return (
     <Container pt="xl" size="xl">
-      {/* Title only shows if it's genuinely generated or not 'trip1' */}
       {trip.title && trip.title !== 'trip1' && (
-        <Textarea
-          autosize
-          mb="xl"
-          size="xl"
-          variant="unstyled"
-          styles={{ input: { fontSize: '2.5rem', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 } }}
-          value={trip.title}
-          onChange={(e) => setTrip({ ...trip, title: e.currentTarget.value })}
-          placeholder="Your Trip Title"
-        />
+        <Center style={{ flexDirection: 'column' }} mb="xl">
+          <Textarea
+            autosize
+            size="xl"
+            variant="unstyled"
+            readOnly={isPub}
+            styles={{ input: { fontSize: '2.5rem', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 } }}
+            value={trip.title}
+            onChange={(e) => setTrip({ ...trip, title: e.currentTarget.value })}
+            placeholder="Your Trip Title"
+          />
+          {trip.user_name && (
+            <Text c="dimmed" size="lg" mt={-10} fw={500}>By {trip.user_name}</Text>
+          )}
+        </Center>
       )}
 
       {loading ? (
@@ -140,27 +151,22 @@ export default function TripPage() {
         <Center mt="xl"><Text c="dimmed">No pictures found for this trip.</Text></Center>
       ) : (
         <Grid gutter="xl">
-          {/* Timeline and Pictures column */}
           <Grid.Col span={{ base: 12, md: 8 }}>
             {trip.story_summary && (
               <Card shadow="sm" p="lg" radius="md" mb="xl" bg="gray.1" withBorder style={{ position: 'relative' }}>
-                <ActionIcon
-                  size="sm"
-                  color="red"
-                  variant="subtle"
-                  title="Delete Overview"
-                  style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }}
-                  onClick={() => setTrip({ ...trip, story_summary: '' })}
-                >
-                  <X size={16} />
-                </ActionIcon>
-                <Title order={3} c="grape.7" mb="sm" pl={24}>Trip Overview</Title>
-                <Textarea
-                  autosize
-                  size="lg"
-                  variant="unstyled"
-                  value={trip.story_summary}
-                  styles={{ input: { color: '#000', lineHeight: 1.6, paddingLeft: '8px' } }}
+                {!isPub && (
+                  <ActionIcon 
+                    size="sm" color="red" variant="subtle" title="Delete Overview" 
+                    style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }} 
+                    onClick={() => setTrip({ ...trip, story_summary: '' })}
+                  >
+                    <X size={16} />
+                  </ActionIcon>
+                )}
+                <Title order={3} c="grape.7" mb="sm" pl={isPub ? 0 : 24}>Trip Overview</Title>
+                <Textarea 
+                  autosize size="lg" variant="unstyled" value={trip.story_summary} readOnly={isPub}
+                  styles={{ input: { color: '#000', lineHeight: 1.6, paddingLeft: isPub ? '0' : '8px' } }}
                   onChange={(e) => setTrip({ ...trip, story_summary: e.currentTarget.value })}
                 />
               </Card>
@@ -176,33 +182,29 @@ export default function TripPage() {
                   <div key={`group-${groupIndex}`}>
                     {combinedSegment && (
                       <Card shadow="sm" p="lg" radius="md" mb="md" bg="gray.1" withBorder style={{ position: 'relative' }}>
-                        <ActionIcon
-                          size="sm"
-                          color="red"
-                          variant="subtle"
-                          title="Delete Paragraph"
-                          style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }}
-                          onClick={() => {
-                            setPictures(prev => {
-                              const newPics = [...prev];
-                              const p1 = newPics.findIndex(p => p.id === group[0].id);
-                              if (p1 > -1) newPics[p1].story_segment = '';
-                              if (group[1]) {
-                                const p2 = newPics.findIndex(p => p.id === group[1].id);
-                                if (p2 > -1) newPics[p2].story_segment = '';
-                              }
-                              return newPics;
-                            });
-                          }}
-                        >
-                          <X size={14} />
-                        </ActionIcon>
+                        {!isPub && (
+                          <ActionIcon 
+                            size="sm" color="red" variant="subtle" title="Delete Paragraph"
+                            style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }}
+                            onClick={() => {
+                              setPictures(prev => {
+                                const newPics = [...prev];
+                                const p1 = newPics.findIndex(p => p.id === group[0].id);
+                                if (p1 > -1) newPics[p1].story_segment = '';
+                                if (group[1]) {
+                                  const p2 = newPics.findIndex(p => p.id === group[1].id);
+                                  if (p2 > -1) newPics[p2].story_segment = '';
+                                }
+                                return newPics;
+                              });
+                            }}
+                          >
+                            <X size={14} />
+                          </ActionIcon>
+                        )}
                         <Textarea
-                          autosize
-                          size="lg"
-                          variant="unstyled"
-                          value={combinedSegment}
-                          styles={{ input: { color: '#000', border: 'none', background: 'transparent', lineHeight: 1.6, paddingLeft: '24px' } }}
+                          autosize size="lg" variant="unstyled" value={combinedSegment} readOnly={isPub}
+                          styles={{ input: { color: '#000', border: 'none', background: 'transparent', lineHeight: 1.6, paddingLeft: isPub ? '0' : '24px' } }}
                           onChange={(e) => {
                             const val = e.currentTarget.value;
                             setPictures(prev => {
@@ -219,12 +221,13 @@ export default function TripPage() {
                         />
                       </Card>
                     )}
-
+                    
                     <SimpleGrid cols={{ base: 1, sm: group.length }} spacing="lg">
                       {group.map((pic) => (
-                        <PictureItem
-                          key={pic.id}
-                          picture={pic}
+                        <PictureItem 
+                          key={pic.id} 
+                          picture={pic} 
+                          isPublished={isPub}
                           onDelete={handleDeletePicture}
                           onDescChange={(newDesc) => {
                             setPictures(prev => prev.map(p => p.id === pic.id ? { ...p, punchy_description: newDesc } : p));
@@ -238,14 +241,12 @@ export default function TripPage() {
             </div>
           </Grid.Col>
 
-          {/* POI Sidebar Column */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             {pois.length > 0 && (
               <Card shadow="sm" p="lg" radius="md" withBorder style={{ position: 'sticky', top: '20px' }}>
                 <Title order={4} mb="md">Key Highlights</Title>
                 <List
-                  spacing="lg"
-                  size="sm"
+                  spacing="lg" size="sm"
                   icon={
                     <ThemeIcon color="orange" size={24} radius="xl" mt={4}>
                       <MapPin size={14} />
@@ -255,16 +256,16 @@ export default function TripPage() {
                   {pois.map((poi, idxPoi) => (
                     <List.Item key={idxPoi}>
                       <Group justify="flex-start" align="flex-start" wrap="nowrap" gap="xs">
-                        <ActionIcon size="sm" color="red" variant="subtle" mt={2} onClick={() => {
-                          setTrip({ ...trip, points_of_interest: pois.filter((_, i) => i !== idxPoi) });
-                        }}>
-                          <X size={16} />
-                        </ActionIcon>
+                        {!isPub && (
+                          <ActionIcon size="sm" color="red" variant="subtle" mt={2} onClick={() => {
+                            setTrip({ ...trip, points_of_interest: pois.filter((_, i) => i !== idxPoi) });
+                          }}>
+                            <X size={16} />
+                          </ActionIcon>
+                        )}
                         <Box style={{ flex: 1 }}>
-                          <TextInput
-                            variant="unstyled"
-                            fw="bold"
-                            value={poi.name}
+                          <TextInput 
+                            variant="unstyled" fw="bold" value={poi.name} readOnly={isPub}
                             onChange={(e) => {
                               const newPois = [...pois];
                               newPois[idxPoi].name = e.currentTarget.value;
@@ -272,11 +273,7 @@ export default function TripPage() {
                             }}
                           />
                           <Textarea
-                            autosize
-                            variant="unstyled"
-                            size="xs"
-                            c="dimmed"
-                            value={poi.description}
+                            autosize variant="unstyled" size="xs" c="dimmed" value={poi.description} readOnly={isPub}
                             onChange={(e) => {
                               const newPois = [...pois];
                               newPois[idxPoi].description = e.currentTarget.value;
@@ -294,30 +291,19 @@ export default function TripPage() {
         </Grid>
       )}
 
-      {/* Dynamic Button Area */}
-      <Center mt="xl" pb="xl">
-        {!isDraft ? (
-          <Button
-            onClick={handleGenerateStory}
-            loading={generating}
-            leftSection={<Sparkles size={16} />}
-            color="grape"
-            size="lg"
-          >
-            useJetLag
-          </Button>
-        ) : (
-          <Button
-            onClick={handlePublish}
-            loading={publishing}
-            leftSection={<Check size={16} />}
-            color="green"
-            size="lg"
-          >
-            Publish Final Story!
-          </Button>
-        )}
-      </Center>
+      {!isPub && (
+        <Center mt="xl" pb="xl">
+          {!isDraft ? (
+            <Button onClick={handleGenerateStory} loading={generating} leftSection={<Sparkles size={16} />} color="grape" size="lg">
+              useJetLag
+            </Button>
+          ) : (
+            <Button onClick={handlePublish} loading={publishing} leftSection={<Check size={16} />} color="green" size="lg">
+              Publish My Trip
+            </Button>
+          )}
+        </Center>
+      )}
     </Container>
   );
 }
