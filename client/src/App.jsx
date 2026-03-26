@@ -14,6 +14,7 @@ import AdminPage from './pages/AdminPage';
 import ExplorePage from './pages/ExplorePage';
 import GetStartedUploadPage from './pages/GetStartedUploadPage';
 import TripPage from './pages/TripPage';
+import TripsPage from './pages/TripsPage';
 
 export default function App() {
   return (
@@ -42,8 +43,11 @@ export default function App() {
         </Route>
 
         <Route path="/explore" element={<ExplorePage />} />
+
+
         <Route path="/get-started-upload" element={<GetStartedUploadPage />} />
         <Route path="/trip/:slug" element={<TripPage />} />
+        <Route path="/trip" element={<TripsPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

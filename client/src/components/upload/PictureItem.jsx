@@ -1,7 +1,7 @@
 import { Card, Text, Group, Badge, Image, Box, ActionIcon, Textarea } from '@mantine/core';
 import { X } from 'lucide-react';
 
-export default function PictureItem({ picture, onDelete, onDescChange }) {
+export default function PictureItem({ picture, isPublished, onDelete, onDescChange }) {
   // Format the date taken
   const formattedDate = picture.date_taken 
     ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date(picture.date_taken))
@@ -11,7 +11,7 @@ export default function PictureItem({ picture, onDelete, onDescChange }) {
     <Card shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative' }}>
       
       {/* Delete Picture Button */}
-      {onDelete && (
+      {onDelete && !isPublished && (
         <ActionIcon 
           color="red" 
           variant="filled" 
@@ -24,7 +24,7 @@ export default function PictureItem({ picture, onDelete, onDescChange }) {
       )}
 
       {/* Header section with Date and Weather */}
-      <Group justify="space-between" mb="xs" align="flex-start" pl={onDelete ? 36 : 0}>
+      <Group justify="space-between" mb="xs" align="flex-start" pl={onDelete && !isPublished ? 36 : 0}>
         <Text fw={500} size="sm">{formattedDate}</Text>
         {picture.weather_temp !== null && picture.weather_temp !== undefined ? (
           <Group gap="xs" align="center">
@@ -61,6 +61,7 @@ export default function PictureItem({ picture, onDelete, onDescChange }) {
           variant="unstyled"
           styles={{ input: { padding: 0 } }}
           autosize
+          readOnly={isPublished}
           value={picture.punchy_description || ''}
           onChange={(e) => onDescChange(e.currentTarget.value)}
         />
