@@ -62,7 +62,7 @@ async function publishTripStory(req, res, next) {
     
     // Update Title & Story
     await TripModel.update(trip.id, { title, slug: newSlug });
-    const updatedTrip = await TripModel.updateStory(trip.id, { story_summary, points_of_interest });
+    const updatedTrip = await TripModel.updateStory(trip.id, { story_summary, points_of_interest, is_published: true });
 
     // Update specific pictures
     for (const p of pictures) {
