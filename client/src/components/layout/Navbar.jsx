@@ -13,7 +13,7 @@ export default function Navbar() {
       </Text>
       <Group>
         <Button variant="subtle" component={Link} to="/explore">Explore</Button>
-        <Button variant="subtle" component={Link} to="/login" >Login</Button>
+        {!isLoggedIn && <Button variant="subtle" component={Link} to="/login" >Login</Button>}
         {isLoggedIn && <Button variant="subtle" component={Link} to="/my-feed">My Trips</Button>}
         {isLoggedIn && <Button variant="subtle" component={Link} to="/upload">New Trip</Button>}
 

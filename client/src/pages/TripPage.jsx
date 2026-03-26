@@ -9,7 +9,7 @@ import PictureItem from '../components/upload/PictureItem';
 export default function TripPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  
+
   const [trip, setTrip] = useState({});
   const [pictures, setPictures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,13 +22,13 @@ export default function TripPage() {
       try {
         setLoading(true);
         const { data } = await getTripBySlug(slug);
-        
+
         let loadedTrip = data.trip || {};
         // Ensure POIs are always parsed
         if (typeof loadedTrip.points_of_interest === 'string') {
           loadedTrip.points_of_interest = JSON.parse(loadedTrip.points_of_interest);
         }
-        
+
         setTrip(loadedTrip);
         setPictures(data.pictures || []);
         if (loadedTrip.story_summary) setIsDraft(true);
@@ -59,7 +59,7 @@ export default function TripPage() {
     try {
       const { data } = await generateTripStory(slug);
       const geminiJSON = data.geminiJSON;
-      
+
       setTrip(prev => ({
         ...prev,
         title: geminiJSON.catchy_title,
@@ -144,22 +144,22 @@ export default function TripPage() {
           <Grid.Col span={{ base: 12, md: 8 }}>
             {trip.story_summary && (
               <Card shadow="sm" p="lg" radius="md" mb="xl" bg="gray.1" withBorder style={{ position: 'relative' }}>
-                <ActionIcon 
-                  size="sm" 
-                  color="red" 
-                  variant="subtle" 
-                  title="Delete Overview" 
-                  style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }} 
+                <ActionIcon
+                  size="sm"
+                  color="red"
+                  variant="subtle"
+                  title="Delete Overview"
+                  style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }}
                   onClick={() => setTrip({ ...trip, story_summary: '' })}
                 >
                   <X size={16} />
                 </ActionIcon>
                 <Title order={3} c="grape.7" mb="sm" pl={24}>Trip Overview</Title>
-                <Textarea 
-                  autosize 
-                  size="lg" 
-                  variant="unstyled" 
-                  value={trip.story_summary} 
+                <Textarea
+                  autosize
+                  size="lg"
+                  variant="unstyled"
+                  value={trip.story_summary}
                   styles={{ input: { color: '#000', lineHeight: 1.6, paddingLeft: '8px' } }}
                   onChange={(e) => setTrip({ ...trip, story_summary: e.currentTarget.value })}
                 />
@@ -176,10 +176,10 @@ export default function TripPage() {
                   <div key={`group-${groupIndex}`}>
                     {combinedSegment && (
                       <Card shadow="sm" p="lg" radius="md" mb="md" bg="gray.1" withBorder style={{ position: 'relative' }}>
-                        <ActionIcon 
-                          size="sm" 
-                          color="red" 
-                          variant="subtle" 
+                        <ActionIcon
+                          size="sm"
+                          color="red"
+                          variant="subtle"
                           title="Delete Paragraph"
                           style={{ position: 'absolute', top: 10, left: 10, zIndex: 10 }}
                           onClick={() => {
@@ -219,12 +219,12 @@ export default function TripPage() {
                         />
                       </Card>
                     )}
-                    
+
                     <SimpleGrid cols={{ base: 1, sm: group.length }} spacing="lg">
                       {group.map((pic) => (
-                        <PictureItem 
-                          key={pic.id} 
-                          picture={pic} 
+                        <PictureItem
+                          key={pic.id}
+                          picture={pic}
                           onDelete={handleDeletePicture}
                           onDescChange={(newDesc) => {
                             setPictures(prev => prev.map(p => p.id === pic.id ? { ...p, punchy_description: newDesc } : p));
@@ -261,10 +261,10 @@ export default function TripPage() {
                           <X size={16} />
                         </ActionIcon>
                         <Box style={{ flex: 1 }}>
-                          <TextInput 
-                            variant="unstyled" 
-                            fw="bold" 
-                            value={poi.name} 
+                          <TextInput
+                            variant="unstyled"
+                            fw="bold"
+                            value={poi.name}
                             onChange={(e) => {
                               const newPois = [...pois];
                               newPois[idxPoi].name = e.currentTarget.value;
@@ -297,21 +297,21 @@ export default function TripPage() {
       {/* Dynamic Button Area */}
       <Center mt="xl" pb="xl">
         {!isDraft ? (
-          <Button 
-            onClick={handleGenerateStory} 
-            loading={generating} 
-            leftSection={<Sparkles size={16} />} 
-            color="grape" 
+          <Button
+            onClick={handleGenerateStory}
+            loading={generating}
+            leftSection={<Sparkles size={16} />}
+            color="grape"
             size="lg"
           >
             useJetLag
           </Button>
         ) : (
-          <Button 
-            onClick={handlePublish} 
-            loading={publishing} 
-            leftSection={<Check size={16} />} 
-            color="green" 
+          <Button
+            onClick={handlePublish}
+            loading={publishing}
+            leftSection={<Check size={16} />}
+            color="green"
             size="lg"
           >
             Publish Final Story!
@@ -321,166 +321,3 @@ export default function TripPage() {
     </Container>
   );
 }
-
-
-
-
-
-
-
-// import { Link } from 'react-router-dom';
-// import { useState } from 'react';
-// import {
-//   Container, Title, Text, Button, Grid, Card, Image, Badge,
-//   Group, Stack, TextInput, Textarea, Checkbox, Modal,
-//   FileInput, AspectRatio, ActionIcon
-// } from '@mantine/core';
-// import { useDisclosure } from '@mantine/hooks';
-// import { Plus, MapPin, Calendar, Upload, Eye, Trash2, Sparkles, Image as ImageIcon } from 'lucide-react';
-// import { useTravel } from '../context/TravelContext';
-
-// export default function TripPage() {
-//   const { trips, user, createTrip, deleteTrip } = useTravel();
-//   const [opened, { open, close }] = useDisclosure(false);
-//   const [newTrip, setNewTrip] = useState({
-//     coverImage: '',
-//     isPublic: true,
-//   });
-//   const [imagePreview, setImagePreview] = useState('');
-
-//   const userTrips = trips.filter(trip => trip.userId === user?.id);
-
-//   const handleImageUpload = (file) => {
-//     if (file) {
-//       const reader = new FileReader();
-//       reader.onloadend = () => {
-//         setImagePreview(reader.result);
-//         setNewTrip({ ...newTrip, coverImage: reader.result });
-//       };
-//       reader.readAsDataURL(file);
-//     }
-//   };
-
-//   const handleCreateTrip = (e) => {
-//     e.preventDefault();
-//     const tripId = createTrip(newTrip);
-//     close();
-//     setNewTrip({ coverImage: '', isPublic: true });
-//     setImagePreview('');
-//     window.location.href = `/trip/${tripId}/upload`;
-//   };
-
-//   return (
-//     <Container size="xl" py="xl">
-
-//       {/* Header */}
-//       <Stack mb="xl" gap="xs">
-//         <Title order={1}>My Trips</Title>
-//         <Text c="dimmed">Manage your travel stories and adventures</Text>
-//       </Stack>
-
-//       {/* Create Trip Button */}
-//       <Button
-//         leftSection={<Plus size={18} />}
-//         mb="xl"
-//         component={Link}
-//         to="/get-started-upload"
-//         onClick={open}
-
-//       >
-//         Create New Trip
-//       </Button>
-
-      
-//       {/* Trips Grid */}
-//       {
-//         userTrips.length === 0 ? (
-//           <Stack align="center" py={80}>
-//             <Card withBorder radius="lg" p="xl" maw={400} w="100%">
-//               <Stack align="center" gap="md">
-//                 <Upload size={48} color="gray" />
-//                 <Title order={3}>No trips yet</Title>
-//                 <Text c="dimmed" ta="center">
-//                   Create your first trip and start building your travel story
-//                 </Text>
-//                 <Button leftSection={<Plus size={18} />} onClick={open}>
-//                   Create Trip
-//                 </Button>
-//               </Stack>
-//             </Card>
-//           </Stack>
-//         ) : (
-//           <Grid>
-//             {userTrips.map(trip => (
-//               <Grid.Col key={trip.id} span={{ base: 12, sm: 6, lg: 4 }}>
-//                 <Card withBorder radius="lg" shadow="sm" h="100%">
-
-//                   <Card.Section>
-//                     <AspectRatio ratio={16 / 9}>
-//                       <Image
-//                         src={trip.coverImage}
-//                         alt={trip.title}
-//                         fallbackSrc="https://placehold.co/400x225?text=No+Image"
-//                       />
-//                     </AspectRatio>
-//                   </Card.Section>
-
-//                   <Stack mt="md" gap="xs">
-//                     <Group justify="space-between">
-//                       <Title order={4}>{trip.title}</Title>
-//                       <Badge color={trip.isPublic ? 'green' : 'gray'} leftSection={trip.isPublic ? <Eye size={12} /> : null}>
-//                         {trip.isPublic ? 'Public' : 'Private'}
-//                       </Badge>
-//                     </Group>
-
-//                     <Group gap="xs">
-//                       <MapPin size={14} />
-//                       <Text size="sm" c="dimmed">{trip.region}, {trip.country}</Text>
-//                     </Group>
-
-//                     <Group gap="xs">
-//                       <Calendar size={14} />
-//                       <Text size="sm" c="dimmed">{new Date(trip.createdAt).toLocaleDateString()}</Text>
-//                     </Group>
-
-//                     <Group gap="xs">
-//                       <Upload size={14} />
-//                       <Text size="sm" c="dimmed">{trip.images.length} photos</Text>
-//                     </Group>
-//                   </Stack>
-
-//                   <Group mt="md" gap="xs">
-//                     {trip.images.length === 0 ? (
-//                       <Button component={Link} to={`/trip/${trip.id}/upload`} flex={1} size="sm">
-//                         Upload Photos
-//                       </Button>
-//                     ) : trip.blogContent ? (
-//                       <Button component={Link} to={`/trip/${trip.id}`} flex={1} size="sm">
-//                         View Story
-//                       </Button>
-//                     ) : (
-//                       <Button component={Link} to={`/trip/${trip.id}/generate`} flex={1} size="sm" color="orange">
-//                         Generate Blog
-//                       </Button>
-//                     )}
-
-//                     <ActionIcon
-//                       color="red"
-//                       variant="light"
-//                       size="lg"
-//                       onClick={() => { if (confirm('Delete this trip?')) deleteTrip(trip.id); }}
-//                     >
-//                       <Trash2 size={16} />
-//                     </ActionIcon>
-//                   </Group>
-
-//                 </Card>
-//               </Grid.Col>
-//             ))}
-//           </Grid>
-//         )
-//       }
-
-//     </Container >
-//   );
-// }
