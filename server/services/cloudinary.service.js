@@ -9,7 +9,7 @@ cloudinary.config({
 async function uploadBuffer(buffer, filename) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: 'usejetlag', public_id: filename, resource_type: 'image' },
+      { folder: 'usejetlag', public_id: filename, resource_type: 'image', format: 'jpg' },
       (err, result) => err ? reject(err) : resolve(result.secure_url)
     );
     stream.end(buffer);
