@@ -15,7 +15,8 @@ import ExplorePage from './pages/ExplorePage';
 import GetStartedUploadPage from './pages/GetStartedUploadPage';
 import TripPage from './pages/TripPage';
 import TripsPage from './pages/TripsPage';
-
+import Explore from "./pages/Explore";
+import Dashboard from "./pages/Dashboard";
 export default function App() {
   return (
     <BrowserRouter>
@@ -42,10 +43,10 @@ export default function App() {
           <Route path="/admin" element={<AdminPage />} />
         </Route>
 
-        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/explore" element={<Explore/>} />
 
-
-        <Route path="/get-started-upload" element={<GetStartedUploadPage />} />
+<Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/get-started-upload" element={<Dashboard />} />
         <Route path="/trip/:slug" element={<TripPage />} />
         <Route path="/trip" element={<TripsPage />} />
 
