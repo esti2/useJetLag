@@ -11,7 +11,6 @@ import PostPage from './pages/PostPage';
 import EditPostPage from './pages/EditPostPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ExplorePage from './pages/ExplorePage';
 import GetStartedUploadPage from './pages/GetStartedUploadPage';
 import TripPage from './pages/TripPage';
 import TripsPage from './pages/TripsPage';
