@@ -11,7 +11,6 @@ import PostPage from './pages/PostPage';
 import EditPostPage from './pages/EditPostPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import AdminPage from './pages/AdminPage';
 import ExplorePage from './pages/ExplorePage';
 import GetStartedUploadPage from './pages/GetStartedUploadPage';
 import TripPage from './pages/TripPage';
@@ -90,11 +89,6 @@ export default function App() {
           <Route path="/my-feed" element={<MyFeedPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/posts/:id/edit" element={<EditPostPage />} />
-        </Route>
-
-        {/* Admin only */}
-        <Route element={<ProtectedRoute adminOnly />}>
-          <Route path="/admin" element={<AdminPage />} />
         </Route>
 
         <Route path="/explore" element={<Explore/>} />
