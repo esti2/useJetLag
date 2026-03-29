@@ -14,7 +14,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 const allowedOrigins = [
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL?.trim().replace(/\/$/, ''),
   'http://localhost:5173',
   'http://localhost:3000'
 ].filter(Boolean);
@@ -22,10 +22,16 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    if (!origin || origin === 'null') return callback(null, true);
+    
+    const normalizedOrigin = origin.trim().replace(/\/$/, '');
+    
+    if (allowedOrigins.includes(normalizedOrigin) || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
+      console.error(`❌ CORS blocked origin: ${origin}`);
+      console.log(`💡 Expected one of:`, allowedOrigins);
+      console.log(`💡 To fix, update CLIENT_URL on Render to exactly: ${normalizedOrigin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
