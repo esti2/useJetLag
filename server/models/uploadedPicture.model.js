@@ -20,7 +20,7 @@ const UploadedPictureModel = {
 
   async getByTripId(tripId) {
     const { rows } = await pool.query(
-      `SELECT * FROM uploaded_pictures WHERE trip_id = $1 ORDER BY created_at ASC`,
+      `SELECT * FROM uploaded_pictures WHERE trip_id = $1 ORDER BY date_taken ASC NULLS LAST`,
       [tripId]
     );
     return rows;
