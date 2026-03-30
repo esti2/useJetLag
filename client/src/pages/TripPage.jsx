@@ -120,7 +120,8 @@ export default function TripPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to generate story. Check your Gemini API Key!');
+      const backendError = err.response?.data?.error || err.message;
+      alert(`Failed to generate story: ${backendError}\n\nIf this persists, please check your Gemini API Key in the Render dashboard.`);
     } finally {
       setGenerating(false);
       setPublishing(false);

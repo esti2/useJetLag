@@ -7,7 +7,7 @@ async function generateStory(pictures) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `You are a creative travel storyteller and data analyst. You will be provided with a series of images and corresponding metadata (JSON objects) for each.
 
@@ -67,15 +67,16 @@ Required JSON Schema:
     }
   }
 
-  const result = await model.generateContent({ contents: [{ role: "user", parts }] });
-  const responseText = result.response.text();
-  
   try {
+    const result = await model.generateContent({ contents: [{ role: "user", parts }] });
+    const responseText = result.response.text();
     const raw = responseText.replace(/```json|```/g, '').trim();
     return JSON.parse(raw);
   } catch (err) {
-    console.error('Failed to parse Gemini output:', responseText);
-    throw new Error('Gemini API returned invalid JSON.');
+    console.error('Gemini API Error:', err);
+    // Extract the most readable part of the error for the frontend
+    const errorMsg = err.message || 'Unknown Gemini API Error';
+    throw new Error(`Gemini Error: ${errorMsg}`);
   }
 }
 
